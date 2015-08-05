@@ -15,7 +15,7 @@ class DataBaseTests(unittest.TestCase):
 
     def test_db_save_page(self):
         html = "<html>baidu</html>"
-        url = "http://www.baidu.com"
+        url = u"http://www.baidu.com"
         self.db.save(url, html)
         htmlindb = self.db.get(url)
         self.assertEqual(html, htmlindb)

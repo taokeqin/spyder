@@ -5,7 +5,7 @@ import urlparse
 
 class SpyderCmd:
     
-    def __init__(self, url, depth, stop_depth, downloader, database, logger):
+    def __init__(self, url, depth, stop_depth, downloader, database, logger, taskqueue):
         self.url = url
         self.netloc = urlparse.urlparse(url).netloc
         self.depth = depth
@@ -13,6 +13,7 @@ class SpyderCmd:
         self.downloader = downloader
         self.database = database
         self.logger = logger
+        self.taskqueue = taskqueue
 
     def create_subcmd(self, url):
         subcmd = copy.copy(self)
@@ -25,13 +26,18 @@ class SpyderCmd:
         soup = BeautifulSoup(html, 'html.parser')
         for link in soup.findAll("a"):
             href = link.get("href")
+            if not href:
+                continue
             up = urlparse.urlparse(href)
+            if up.scheme and up.scheme != "http" and up.scheme != "https":
+                continue
             if not up.netloc:
                 href = urlparse.urljoin(self.url, href)
             else:
                 if up.netloc != self.netloc:
                     #skip this out domain link
                     continue
+
             href = urlparse.urldefrag(href)[0]
             urlfexistindb = self.database.is_url_exist(href)
             if urlfexistindb:
@@ -56,7 +62,8 @@ class SpyderCmd:
             for href in links:
                 self.logger.debug("found new url: {0}, create a sub cmd to download it.".format(href))
                 subspyder = self.create_subcmd(href)
-                subspyder.execute()
+                #subspyder.execute()
+                self.taskqueue.put(subspyder)
             self.logger.info("url: {0} process complete!".format(self.url))
 
         except:

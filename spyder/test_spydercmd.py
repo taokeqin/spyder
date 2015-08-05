@@ -2,6 +2,7 @@ import unittest
 import spydercmd
 import copy
 from mock import MagicMock, call
+from Queue import Queue
 
 class DownloaderMock:
     pass
@@ -20,10 +21,11 @@ class SpyderCmdTests(unittest.TestCase):
         self.logger.info = MagicMock()
         self.logger.debug = MagicMock()
         self.logger.error = MagicMock()
+        self.queue = Queue()
 
     def test_spyder_depth(self):
         # url, url_depth, message_queue, db, logger
-        s = spydercmd.SpyderCmd("http:://www.baidu.com", 0, 2, None, None, self.logger)
+        s = spydercmd.SpyderCmd("http:://www.baidu.com", 0, 2, None, None, self.logger, self.queue)
         self.assertEqual(s.depth, 0)
         subspyder = s.create_subcmd("http://www.google.com")
         self.assertEqual(subspyder.depth, 1)
@@ -38,14 +40,10 @@ class SpyderCmdTests(unittest.TestCase):
         db.save = MagicMock()
         db.is_url_exist = MagicMock(return_value=False)
 
-        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger)
+        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger, self.queue)
         s.execute()
         
-        dlmock.get.assert_has_calls([call(u"http://a.com/0.html"),
-                                     call(u"http://a.com/1.html")])
-        db.save.assert_has_calls(
-            [call(u"http://a.com/0.html",'<a href="http://a.com/1.html">'),
-            call(u"http://a.com/1.html", 'nolink')])
+        self.assertEqual(self.queue.qsize(), 1)
         
     def test_execute_stop_when_reach_stopdepth(self):
         dlmock = DownloaderMock()       
@@ -56,12 +54,7 @@ class SpyderCmdTests(unittest.TestCase):
         db = DataBaseMock()
         db.save = MagicMock()
         db.is_url_exist = MagicMock(return_value=False)
-        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger)
+        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger, self.queue)
         s.execute()
         
-        dlmock.get.assert_has_calls([call(u"http://a.com/0.html"),
-                                     call(u"http://a.com/11.html")])
-        db.save.assert_has_calls(
-            [call(u"http://a.com/0.html", '<a href="http://a.com/11.html">'),
-             call(u"http://a.com/11.html", '<a href="http://a.com/21.html">'),
-            call(u"http://a.com/21.html", '<a href="http://a.com/31.html">')])
+        self.assertEqual(self.queue.qsize(), 1)
