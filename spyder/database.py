@@ -2,8 +2,8 @@ import sqlite3
 
 class DB:
     
-    def __init__(self):
-        self._connect()
+    def __init__(self, dbname="data.db"):
+        self._connect(dbname)
         self._create_table()
 
     def save(self, url, html):
@@ -15,7 +15,12 @@ class DB:
         one = self.c.fetchone()
         return one[0]
 
-    def _connect(self, filename="data.sqlite3"):
+    def is_url_exist(self, url):
+        self.c.execute("SELECT count(*) from spyder where url = '{0}'".format(url))
+        one = self.c.fetchone()
+        return one[0]
+
+    def _connect(self, filename):
         self.connection = sqlite3.connect(filename)
         self.connection.text_factory = str
         self.c = self.connection.cursor()

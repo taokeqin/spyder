@@ -4,6 +4,14 @@ import hashlib
 from urlparse import urlparse
 import database
 import logging
+import spydercmd
+
+class Downloader:
+    def get(self, url):
+        headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'}
+        r = requests.get(url, headers=headers)
+        return r.content
+
 
 class Spyder:
 
@@ -36,10 +44,10 @@ class Spyder:
 
     def start(self):
         self._create_logger()
-        self.logger.info("download page: {0}".format(self.starturl))
-        self.r = requests.get(self.starturl)
         self.db = database.DB()
-        self.db.save(self.starturl, self.r.content)
+        self.downloader = Downloader()
+        self.spydercmd = spydercmd.SpyderCmd(self.starturl, 0, 1, self.downloader, self.db, self.logger)
+        self.spydercmd.execute()
 
 if __name__ == "__main__":
     s = Spyder()
