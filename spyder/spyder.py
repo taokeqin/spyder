@@ -2,6 +2,7 @@ import requests
 import argparse
 import hashlib
 from urlparse import urlparse
+import database
 
 class Spyder:
 
@@ -18,12 +19,8 @@ class Spyder:
 
     def start(self):
         self.r = requests.get(self.args.url)
-        urlp = urlparse(self.args.url)
-        hostname = urlp.netloc
-        pathname = urlp.path
-        urlhash = hashlib.sha224(hostname+'/'+pathname).hexdigest()
-        with open(urlhash, 'w') as f:
-            f.write(self.r.content)
+        self.db = database.DB()
+        self.db.save(self.args.url, self.r.content)
 
 if __name__ == "__main__":
     s = Spyder()
