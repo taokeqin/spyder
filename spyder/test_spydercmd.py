@@ -11,9 +11,15 @@ class DownloaderMock:
 class DataBaseMock:
     pass
 
+    
 class Logger:
     pass
 
+    
+class Filter:
+    pass
+    
+    
 class SpyderCmdTests(unittest.TestCase):
     
     def setUp(self):
@@ -22,10 +28,12 @@ class SpyderCmdTests(unittest.TestCase):
         self.logger.debug = MagicMock()
         self.logger.error = MagicMock()
         self.queue = Queue()
-
+        self.filter = Filter()
+        self.filter.accept = MagicMock()
+        
     def test_spyder_depth(self):
         # url, url_depth, message_queue, db, logger
-        s = spydercmd.SpyderCmd("http:://www.baidu.com", 0, 2, None, None, self.logger, self.queue)
+        s = spydercmd.SpyderCmd("http:://www.baidu.com", 0, 2, None, None, self.logger, self.queue, self.filter)
         self.assertEqual(s.depth, 0)
         subspyder = s.create_subcmd("http://www.google.com")
         self.assertEqual(subspyder.depth, 1)
@@ -40,7 +48,7 @@ class SpyderCmdTests(unittest.TestCase):
         db.save = MagicMock()
         db.is_url_exist = MagicMock(return_value=False)
 
-        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger, self.queue)
+        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger, self.queue, self.filter)
         s.execute()
         
         self.assertEqual(self.queue.qsize(), 1)
@@ -54,7 +62,7 @@ class SpyderCmdTests(unittest.TestCase):
         db = DataBaseMock()
         db.save = MagicMock()
         db.is_url_exist = MagicMock(return_value=False)
-        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger, self.queue)
+        s = spydercmd.SpyderCmd(u"http://a.com/0.html", 0, 2, dlmock, db, self.logger, self.queue, self.filter)
         s.execute()
         
         self.assertEqual(self.queue.qsize(), 1)

@@ -8,6 +8,7 @@ class DataBaseTests(unittest.TestCase):
         self.db = database.DB(self.dbname)
 
     def tearDown(self):
+        self.db.close()
         os.remove(self.dbname)
 
     def test_db_connect(self):

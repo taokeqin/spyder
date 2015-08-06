@@ -18,6 +18,9 @@ class DB:
         self.connection.commit()
         self.clock.release()
         
+    def close(self):
+        self.connection.close()
+
     def get(self, url):
         self.clock.acquire()
         self.c.execute("SELECT html from spyder where url = '{0}'".format(url))
@@ -34,7 +37,7 @@ class DB:
 
     def _connect(self, filename):
         self.connection = sqlite3.connect(filename, check_same_thread=False)
-        self.connection.text_factory = str
+        #self.connection.text_factory = str
         self.c = self.connection.cursor()
 
     def _create_table(self):
