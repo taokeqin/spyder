@@ -1,6 +1,7 @@
 from threading import Thread, Lock
 from Queue import Queue
 
+
 class TaskQueue(Queue, object):
     '''
         wraper on Queue to provide statistics function
@@ -12,7 +13,7 @@ class TaskQueue(Queue, object):
 
     def put(self, task):
         self.counterlock.acquire()
-        self.counter =  self.counter + 1
+        self.counter = self.counter + 1
         super(TaskQueue, self).put(task)
         self.counterlock.release()
 
@@ -29,7 +30,7 @@ class WorkerThread(Thread):
         Thead runing in a thread pool.
         consumer of task_queue
     '''
-    
+
     def __init__(self, task_queue):
         Thread.__init__(self)
         self.task_queue = task_queue
@@ -45,16 +46,17 @@ class WorkerThread(Thread):
             try:
                 task.execute()
             except:
-                # ignore all exception in task code, assume task done 
+                # ignore all exception in task code, assume task done
                 # should be handled correctly by task self
                 pass
             self.task_queue.task_done()
+
 
 class ThreadPool:
     '''
         produce task to a Queue, will be consumed by worker thread
     '''
-    
+
     def __init__(self, task_queue, thread_number=10):
         self.thread_number = thread_number
         self.task_queue = task_queue

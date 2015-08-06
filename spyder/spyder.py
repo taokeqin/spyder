@@ -11,15 +11,17 @@ import spydercmd
 import threadpool
 from threading import Timer
 
+
 class Downloader:
     def get(self, url):
-        headers = {'user-agent': 
+        headers = {'user-agent':
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'}
         r = requests.get(url, headers=headers)
         if r.encoding != 'utf-8':
             return r.content.decode(r.encoding)
         else:
             return r.text
+
 
 class Filter:
     def __init__(self, keywords):
@@ -37,10 +39,11 @@ class Filter:
 
         return result
 
+
 class Spyder:
 
     def __init__(self):
-	   self._handle_input()
+        self._handle_input()
 
     def _handle_input(self):
         optparser = argparse.ArgumentParser(description='spyder application.')
@@ -66,7 +69,6 @@ class Spyder:
         else:
             self.keywords = []
 
-
     def _create_logger(self):
         self.logger = logging.getLogger('spyder')
         self.logger.setLevel(logging.INFO)
@@ -82,17 +84,16 @@ class Spyder:
         self.downloader = Downloader()
         self.taskqueue = threadpool.TaskQueue()
         self.tp = threadpool.ThreadPool(self.taskqueue)
-        #f = Filter([u"云计算"])
         f = Filter(self.keywords)
         mydepth = 0
-        self.spydercmd = spydercmd.SpyderCmd(self.starturl, mydepth, \
-                        int(self.depth), self.downloader, \
+        self.spydercmd = spydercmd.SpyderCmd(self.starturl, mydepth,
+                        int(self.depth), self.downloader,
                         self.db, self.logger, self.taskqueue, f)
         self.taskqueue.put(self.spydercmd)
         self.print_progress()
         self.tp.run()
         print "100% Spyder completed!"
-        
+
     def progress(self):
         total, inqueue = self.taskqueue.statistics()
         print "total link: {0}, completed link: {1}, Left in queue: {2}, raw progress: {3}%"\
@@ -100,7 +101,7 @@ class Spyder:
         self.print_progress()
 
     def print_progress(self):
-        self.t=Timer(10,self.progress)
+        self.t = Timer(10, self.progress)
         self.t.daemon = True
         self.t.start()
 

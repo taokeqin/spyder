@@ -2,8 +2,9 @@ import sys
 import sqlite3
 from threading import Lock
 
+
 class DB:
-    
+
     def __init__(self, dbname="data.sqlite3"):
         self.clock = Lock()
         self._connect(dbname)
@@ -17,7 +18,7 @@ class DB:
             print "Unexpected error:", sys.exc_info()
         self.connection.commit()
         self.clock.release()
-        
+
     def close(self):
         self.connection.close()
 
@@ -27,7 +28,7 @@ class DB:
         one = self.c.fetchone()
         self.clock.release()
         return one[0]
-        
+
     def is_url_exist(self, url):
         self.clock.acquire()
         self.c.execute("SELECT count(*) from spyder where url = '{0}'".format(url))
@@ -37,7 +38,7 @@ class DB:
 
     def _connect(self, filename):
         self.connection = sqlite3.connect(filename, check_same_thread=False)
-        #self.connection.text_factory = str
+        # self.connection.text_factory = str
         self.c = self.connection.cursor()
 
     def _create_table(self):

@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 
 import copy
 import sys
 from bs4 import BeautifulSoup
 import urlparse
 
+
 class SpyderCmd:
-    
+
     def __init__(self, url, depth, stop_depth, downloader, database, logger, taskqueue, filter):
         self.url = url
         self.netloc = urlparse.urlparse(url).netloc
@@ -17,12 +18,13 @@ class SpyderCmd:
         self.logger = logger
         self.taskqueue = taskqueue
         self.filter = filter
+
     def create_subcmd(self, url):
         subcmd = copy.copy(self)
         subcmd.url = url
         subcmd.depth = self.depth + 1
         return subcmd
-    
+
     def _extract_links(self, html):
         links = []
         soup = BeautifulSoup(html, 'html.parser')
@@ -37,7 +39,7 @@ class SpyderCmd:
                 href = urlparse.urljoin(self.url, href)
             else:
                 if up.netloc != self.netloc:
-                    #skip this out domain link
+                    # skip this out domain link
                     continue
             href = urlparse.urldefrag(href)[0]
             urlfexistindb = self.database.is_url_exist(href)
@@ -56,9 +58,10 @@ class SpyderCmd:
                 self.logger.info("content of url: {0}, saveed to db".format(self.url))
             else:
                 self.logger.info("content of url: {0}, droped by filter".format(self.url))
-            #based on stop level featch all url in current page and create sub cmd
+            # based on stop level featch all url in current page and create sub cmd
             if self.depth >= self.stop_depth:
-                self.logger.debug("currently url: {0} depth reachs the stop depth. will not continue".format(self.url))
+                self.logger.debug("currently url: {0} depth reachs the stop depth. will not continue".
+                                  format(self.url))
                 return
             self.logger.info("extract urls on page: {0}".format(self.url))
 
@@ -67,7 +70,7 @@ class SpyderCmd:
             for href in links:
                 self.logger.debug("found new url: {0}, create a sub cmd to download it.".format(href))
                 subspyder = self.create_subcmd(href)
-                #subspyder.execute()
+                # subspyder.execute()
                 self.taskqueue.put(subspyder)
             self.logger.info("url: {0} process complete!".format(self.url))
 
