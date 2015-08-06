@@ -5,7 +5,7 @@ from threading import Lock
 
 class DB:
 
-    def __init__(self, dbname="data.sqlite3"):
+    def __init__(self, dbname="data.db"):
         self.clock = Lock()
         self._connect(dbname)
         self._create_table()

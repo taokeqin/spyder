@@ -13,6 +13,9 @@ from threading import Timer
 
 
 class Downloader:
+    '''
+        impl get method to download url return unicode string
+    '''
     def get(self, url):
         headers = {'user-agent':
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'}
@@ -24,6 +27,9 @@ class Downloader:
 
 
 class Filter:
+    '''
+        impl accept method to check html pass or not
+    '''
     def __init__(self, keywords):
         self.keywords = keywords
 
@@ -41,7 +47,9 @@ class Filter:
 
 
 class Spyder:
+    '''
 
+    '''
     def __init__(self):
         self._handle_input()
 
@@ -51,6 +59,7 @@ class Spyder:
         optparser.add_argument('-f', dest='logfile', help='file to save logs')
         optparser.add_argument('-d', dest='depth', help='page depth')
         optparser.add_argument('-k', dest='keywords', help="match key words use or")
+        optparser.add_argument('-t', dest='threadnumber', help="number of thread in threadpool")
         self.args = optparser.parse_args()
         if not self.args.url:
             optparser.print_help()
@@ -68,6 +77,10 @@ class Spyder:
             self.keywords = [s.decode(sys.stderr.encoding) for s in self.args.keywords.split(',')]
         else:
             self.keywords = []
+        if self.args.threadnumber:
+            self.threadnumber = self.args.threadnumber
+        else:
+            self.threadnumber = 10
 
     def _create_logger(self):
         self.logger = logging.getLogger('spyder')
@@ -83,7 +96,7 @@ class Spyder:
         self.db = database.DB()
         self.downloader = Downloader()
         self.taskqueue = threadpool.TaskQueue()
-        self.tp = threadpool.ThreadPool(self.taskqueue)
+        self.tp = threadpool.ThreadPool(self.taskqueue, self.threadnumber)
         f = Filter(self.keywords)
         mydepth = 0
         self.spydercmd = spydercmd.SpyderCmd(self.starturl, mydepth,
