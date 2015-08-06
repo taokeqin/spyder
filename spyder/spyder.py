@@ -60,6 +60,7 @@ class Spyder:
         optparser.add_argument('-d', dest='depth', help='page depth')
         optparser.add_argument('-k', dest='keywords', help="match key words use or")
         optparser.add_argument('-t', dest='threadnumber', help="number of thread in threadpool")
+        optparser.add_argument('-l', dest='loglevel', help="set the log level: error, warning, info, debug")
         self.args = optparser.parse_args()
         if not self.args.url:
             optparser.print_help()
@@ -81,12 +82,19 @@ class Spyder:
             self.threadnumber = self.args.threadnumber
         else:
             self.threadnumber = 10
+        levelmap = {"error": logging.ERROR, "warning": logging.WARNING, "info": logging.INFO, "debug": logging.DEBUG}
+        if self.args.loglevel:
+            if self.args.loglevel in levelmap:
+                self.loglevel = levelmap[self.args.loglevel]
+        else:
+            self.loglevel = logging.INFO
 
     def _create_logger(self):
+
         self.logger = logging.getLogger('spyder')
-        self.logger.setLevel(logging.INFO)
+        self.logger.setLevel(self.loglevel)
         h = logging.FileHandler(self.logfile)
-        h.setLevel(logging.INFO)
+        h.setLevel(self.loglevel)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         h.setFormatter(formatter)
         self.logger.addHandler(h)

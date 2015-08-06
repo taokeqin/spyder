@@ -50,20 +50,20 @@ class SpyderCmd:
 
     def execute(self):
         try:
-            self.logger.info(u"start download url: {0}".format(self.url))
+            self.logger.info("start download url: {0}".format(self.url))
             html = self.downloader.get(self.url)
             self.logger.info("download url: {0}, commplete!".format(self.url))
             if self.filter.accept(html):
                 self.database.save(self.url, html)
                 self.logger.info("content of url: {0}, saveed to db".format(self.url))
             else:
-                self.logger.info("content of url: {0}, droped by filter".format(self.url))
+                self.logger.warning("content of url: {0}, droped by filter".format(self.url))
             # based on stop level featch all url in current page and create sub cmd
             if self.depth >= self.stop_depth:
                 self.logger.debug("currently url: {0} depth reachs the stop depth. will not continue".
                                   format(self.url))
                 return
-            self.logger.info("extract urls on page: {0}".format(self.url))
+            self.logger.debug("extract urls on page: {0}".format(self.url))
 
             links = self._extract_links(html)
             self.logger.info("extract urls on {0} done".format(self.url))
