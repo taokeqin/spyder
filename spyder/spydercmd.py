@@ -4,7 +4,8 @@ import copy
 import sys
 from bs4 import BeautifulSoup
 import urlparse
-
+from collections import deque
+from threading import Lock
 
 class SpyderCmd:
 
@@ -18,6 +19,18 @@ class SpyderCmd:
         self.logger = logger
         self.taskqueue = taskqueue
         self.filter = filter
+        self.urlcache = deque([], 512)
+        self.urlcachelock = Lock()
+
+    def _is_url_exist_in_cache(self, url):
+        self.urlcachelock.acquire()
+        exist = False
+        if url in self.urlcache:
+            exist = True
+        else:
+            self.urlcache.append(url)
+        self.urlcachelock.release()
+        return exist
 
     def create_subcmd(self, url):
         subcmd = copy.copy(self)
@@ -42,6 +55,9 @@ class SpyderCmd:
                     # skip this out domain link
                     continue
             href = urlparse.urldefrag(href)[0]
+            urlexistincache = self._is_url_exist_in_cache(href)
+            if urlexistincache:
+                continue
             urlfexistindb = self.database.is_url_exist(href)
             if urlfexistindb:
                 continue

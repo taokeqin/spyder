@@ -100,7 +100,7 @@ class Spyder:
         self.taskqueue.put(self.spydercmd)
         self._print_progress()
         self.tp.run()
-        print "100% Spyder completed!"
+        print "100% Spyder completed! completed link: ", self.taskqueue.statistics()[0]
 
     def _progress(self):
         total, inqueue = self.taskqueue.statistics()
