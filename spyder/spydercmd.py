@@ -23,6 +23,11 @@ class SpyderCmd:
         self.urlcachelock = Lock()
 
     def _is_url_exist_in_cache(self, url):
+        '''
+            this check has two functions:
+            1, to speed up the exist url check, if not found, then check in db
+            2, to prevent taks in thread working on the same url
+        '''
         self.urlcachelock.acquire()
         exist = False
         if url in self.urlcache:
@@ -82,13 +87,13 @@ class SpyderCmd:
             self.logger.debug("extract urls on page: {0}".format(self.url))
 
             links = self._extract_links(html)
-            self.logger.info("extract urls on {0} done".format(self.url))
+            self.logger.debug("extract urls on {0} done".format(self.url))
             for href in links:
                 self.logger.debug("found new url: {0}, create a sub cmd to download it.".format(href))
                 subspyder = self.create_subcmd(href)
                 # subspyder.execute()
                 self.taskqueue.put(subspyder)
-            self.logger.info("url: {0} process complete!".format(self.url))
+            self.logger.debug("url: {0} process complete!".format(self.url))
 
         except:
             self.logger.error("download url: {0} failed, with error: {1}".format(self.url, sys.exc_info()))
