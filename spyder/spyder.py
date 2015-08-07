@@ -98,18 +98,18 @@ class Spyder:
                         int(self.depth), self.downloader,
                         self.db, self.logger, self.taskqueue, f)
         self.taskqueue.put(self.spydercmd)
-        self.print_progress()
+        self._print_progress()
         self.tp.run()
         print "100% Spyder completed!"
 
-    def progress(self):
+    def _progress(self):
         total, inqueue = self.taskqueue.statistics()
         print "total link: {0}, completed link: {1}, Left in queue: {2}, raw progress: {3}%"\
             .format(total, int(total)-int(inqueue), inqueue, (int(total)-int(inqueue))*1.0/int(total)*100)
-        self.print_progress()
+        self._print_progress()
 
-    def print_progress(self):
-        self.t = Timer(10, self.progress)
+    def _print_progress(self):
+        self.t = Timer(10, self._progress)
         self.t.daemon = True
         self.t.start()
 
