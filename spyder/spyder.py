@@ -56,38 +56,25 @@ class Spyder:
     def _handle_input(self):
         optparser = argparse.ArgumentParser(description='spyder application.')
         optparser.add_argument('-u', '--url', dest='url', help='base url')
-        optparser.add_argument('-f', dest='logfile', help='file to save logs')
-        optparser.add_argument('-d', dest='depth', help='page depth')
+        optparser.add_argument('-f', dest='logfile', default='spyder.log', help='file to save logs')
+        optparser.add_argument('-d', dest='depth', type=int, default=0, help='page depth')
         optparser.add_argument('-k', dest='keywords', help="match key words use or")
-        optparser.add_argument('-t', dest='threadnumber', help="number of thread in threadpool")
-        optparser.add_argument('-l', dest='loglevel', help="set the log level: error, warning, info, debug")
+        optparser.add_argument('-t', dest='threadnumber', type=int, default=10, help="number of thread in threadpool")
+        optparser.add_argument('-l', dest='loglevel', default='warning', choices=['error', 'warning', 'info', 'debug'], help="set the log level: error, warning, info, debug")
         self.args = optparser.parse_args()
         if not self.args.url:
             optparser.print_help()
             quit()
         self.starturl = self.args.url
-        if not self.args.logfile:
-            self.logfile = 'spyder.log'
-        else:
-            self.logfile = self.args.logfile
-        if not self.args.depth:
-            self.depth = 0
-        else:
-            self.depth = self.args.depth
+        self.logfile = self.args.logfile
+        self.depth = self.args.depth
         if self.args.keywords:
             self.keywords = [s.decode(sys.stderr.encoding) for s in self.args.keywords.split(',')]
         else:
             self.keywords = []
-        if self.args.threadnumber:
-            self.threadnumber = self.args.threadnumber
-        else:
-            self.threadnumber = 10
+        self.threadnumber = self.args.threadnumber
         levelmap = {"error": logging.ERROR, "warning": logging.WARNING, "info": logging.INFO, "debug": logging.DEBUG}
-        if self.args.loglevel:
-            if self.args.loglevel in levelmap:
-                self.loglevel = levelmap[self.args.loglevel]
-        else:
-            self.loglevel = logging.INFO
+        self.loglevel = levelmap[self.args.loglevel]
 
     def _create_logger(self):
 
