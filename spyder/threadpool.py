@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+    threadpool.py
+    ~~~~~~~~~
+    This module implements the threadpool and it's related taskqueue.
+    :copyright: (c) 2015 by Tao Keqin.
+    :license: BSD, see LICENSE for more details.
+"""
 from threading import Thread, Lock
 from Queue import Queue
 
@@ -12,12 +20,14 @@ class TaskQueue(Queue, object):
         self.counterlock = Lock()
 
     def put(self, task):
+        '''put a task to queue and increment counter for statistics use'''
         self.counterlock.acquire()
         self.counter = self.counter + 1
         super(TaskQueue, self).put(task)
         self.counterlock.release()
 
     def statistics(self):
+        '''returen the statistics data.'''
         self.counterlock.acquire()
         totaltaskcount = self.counter
         lefttaskcount = self.qsize()
@@ -52,7 +62,7 @@ class WorkerThread(Thread):
             self.task_queue.task_done()
 
 
-class ThreadPool:
+class ThreadPool(object):
     '''
         produce task to a Queue, will be consumed by worker thread
     '''
@@ -61,7 +71,7 @@ class ThreadPool:
         self.thread_number = thread_number
         self.task_queue = task_queue
         self.task_counter = 0
-        self.worker_threads = [WorkerThread(self.task_queue) for i in xrange(10)]
+        self.worker_threads = [WorkerThread(self.task_queue) for _ in xrange(10)]
 
     def run(self):
         self.task_queue.join()

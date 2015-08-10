@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-
+"""
+    spydercmd.py
+    ~~~~~~~~~
+    This module implements the command for spyder task, the command deisgned be run in thread pool.
+    :copyright: (c) 2015 by Tao Keqin.
+    :license: BSD, see LICENSE for more details.
+"""
 import copy
 import sys
 from bs4 import BeautifulSoup
@@ -7,12 +13,12 @@ import urlparse
 from collections import deque
 from threading import Lock
 
-class SpyderCmd:
-
+class SpyderCmd(object):
+    '''command for spyder task. must implements execute method'''
     urlcache = deque([], 512)
     urlcachelock = Lock()
-    
-    def __init__(self, url, depth, stop_depth, downloader, database, logger, taskqueue, filter):
+
+    def __init__(self, url, depth, stop_depth, downloader, database, logger, taskqueue, contentfilter):
         self.url = url
         self.netloc = urlparse.urlparse(url).netloc
         self.depth = depth
@@ -21,7 +27,7 @@ class SpyderCmd:
         self.database = database
         self.logger = logger
         self.taskqueue = taskqueue
-        self.filter = filter
+        self.filter = contentfilter
 
     def _is_url_exist_in_cache(self, url):
         '''
@@ -39,25 +45,27 @@ class SpyderCmd:
         return exist
 
     def create_subcmd(self, url):
+        '''create a subcmd with incremented depth and a given url'''
         subcmd = copy.copy(self)
         subcmd.url = url
         subcmd.depth = self.depth + 1
         return subcmd
 
     def _extract_links(self, html):
+        '''extract all links on currentl html content. currently only support <a> tag'''
         links = []
         soup = BeautifulSoup(html, 'html.parser')
         for link in soup.findAll("a"):
             href = link.get("href")
             if not href:
                 continue
-            up = urlparse.urlparse(href)
-            if up.scheme and up.scheme != "http" and up.scheme != "https":
+            urlparser = urlparse.urlparse(href)
+            if urlparser.scheme and urlparser.scheme != "http" and urlparser.scheme != "https":
                 continue
-            if not up.netloc:
+            if not urlparser.netloc:
                 href = urlparse.urljoin(self.url, href)
             else:
-                if up.netloc != self.netloc:
+                if urlparser.netloc != self.netloc:
                     # skip this out domain link
                     continue
             href = urlparse.urldefrag(href)[0]
@@ -71,6 +79,14 @@ class SpyderCmd:
         return list(set(links))
 
     def execute(self):
+        '''The heave work done in this method. 
+
+        download page
+        check depth
+        check url duplicate
+        extrack links
+        create sub task for new link
+        '''
         try:
             self.logger.info("start download url: {0}".format(self.url))
             html = self.downloader.get(self.url)
