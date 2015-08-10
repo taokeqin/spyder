@@ -9,6 +9,9 @@ from threading import Lock
 
 class SpyderCmd:
 
+    urlcache = deque([], 512)
+    urlcachelock = Lock()
+    
     def __init__(self, url, depth, stop_depth, downloader, database, logger, taskqueue, filter):
         self.url = url
         self.netloc = urlparse.urlparse(url).netloc
@@ -19,8 +22,6 @@ class SpyderCmd:
         self.logger = logger
         self.taskqueue = taskqueue
         self.filter = filter
-        self.urlcache = deque([], 512)
-        self.urlcachelock = Lock()
 
     def _is_url_exist_in_cache(self, url):
         '''
