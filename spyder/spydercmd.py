@@ -12,19 +12,8 @@ from bs4 import BeautifulSoup
 import urlparse
 from collections import deque
 from threading import Lock
+from decorators import lockguard
 
-def lockguard(lock):
-    def wrapper(methodtosync):
-        def newwrapper(*args, **kwargs):
-            lock.acquire()
-            try:
-                return methodtosync(*args, **kwargs)
-            finally:
-                lock.release()
-        return newwrapper
-    return wrapper
-
-        
 
 class SpyderCmd(object):
     '''command for spyder task. must implements execute method'''
@@ -91,7 +80,7 @@ class SpyderCmd(object):
         return list(set(links))
 
     def execute(self):
-        '''The heave work done in this method. 
+        '''The heave work done in this method.
 
         download page
         check depth

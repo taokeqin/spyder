@@ -117,6 +117,7 @@ class Spyder(object):
         self._print_progress()
         self.threadpool.run()
         print "100% Spyder completed! completed link: ", self.taskqueue.statistics()[0]
+        print "Saved {} html page to database.".format(self.database.getsavecounter())
 
     def _progress(self):
         '''print progress with give format'''
