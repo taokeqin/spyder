@@ -13,6 +13,19 @@ import urlparse
 from collections import deque
 from threading import Lock
 
+def lockguard(lock):
+    def wrapper(methodtosync):
+        def newwrapper(*args, **kwargs):
+            lock.acquire()
+            try:
+                return methodtosync(*args, **kwargs)
+            finally:
+                lock.release()
+        return newwrapper
+    return wrapper
+
+        
+
 class SpyderCmd(object):
     '''command for spyder task. must implements execute method'''
     urlcache = deque([], 512)
@@ -29,19 +42,18 @@ class SpyderCmd(object):
         self.taskqueue = taskqueue
         self.filter = contentfilter
 
+    @lockguard(urlcachelock)
     def _is_url_exist_in_cache(self, url):
         '''
             this check has two functions:
             1, to speed up the exist url check, if not found, then check in db
             2, to prevent taks in thread working on the same url
         '''
-        self.urlcachelock.acquire()
         exist = False
         if url in self.urlcache:
             exist = True
         else:
             self.urlcache.append(url)
-        self.urlcachelock.release()
         return exist
 
     def create_subcmd(self, url):
