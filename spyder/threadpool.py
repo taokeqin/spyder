@@ -21,17 +21,15 @@ class TaskQueue(Queue, object):
 
     def put(self, task):
         '''put a task to queue and increment counter for statistics use'''
-        self.counterlock.acquire()
-        self.counter = self.counter + 1
-        super(TaskQueue, self).put(task)
-        self.counterlock.release()
+        with self.counterlock:
+            self.counter = self.counter + 1
+            super(TaskQueue, self).put(task)
 
     def statistics(self):
         '''returen the statistics data.'''
-        self.counterlock.acquire()
-        totaltaskcount = self.counter
-        lefttaskcount = self.qsize()
-        self.counterlock.release()
+        with self.counterlock:
+            totaltaskcount = self.counter
+            lefttaskcount = self.qsize()
         return totaltaskcount, lefttaskcount
 
 
