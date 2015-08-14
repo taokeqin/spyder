@@ -26,7 +26,7 @@ class Downloader(object):
         Note: use utf-8 to decode all content
         '''
         headers = {'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36'}
-        resp = requests.get(url, headers=headers)
+        resp = requests.get(url, headers=headers, timeout=60)
         if resp.encoding != 'utf-8':
             return resp.content.decode(resp.encoding)
         else:

@@ -90,7 +90,12 @@ class SpyderCmd(object):
         '''
         try:
             self.logger.info("start download url: {0}".format(self.url))
-            html = self.downloader.get(self.url)
+            html = None
+            try:
+                html = self.downloader.get(self.url)
+            except:
+                self.logger.error("download url: {0} failed, with error: {1}".format(self.url, sys.exc_info()[0]))
+                raise
             self.logger.info("download url: {0}, commplete!".format(self.url))
             if self.filter.accept(html):
                 self.database.save(self.url, html)
